@@ -13,24 +13,26 @@ run = True
 # - have chess board be like an array
 # - if user clicks a tile with a piece in it, user can move piece
 
+
 class Board:
-    letters = ['a','b','c','d','e','f','g','h']
+    letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
     coordinates = {'a': 0,
-                        'b': 100,
-                        'c': 200,
-                        'd': 300,
-                        'e': 400,
-                        'f': 500,
-                        'g': 600,
-                        'h': 700,
-                        '1': 700,
-                        '2': 600,
-                        '3': 500,
-                        '4': 400,
-                        '5': 300,
-                        '6': 200,
-                        '7': 100,
-                        '8': 0}
+                   'b': 100,
+                   'c': 200,
+                   'd': 300,
+                   'e': 400,
+                   'f': 500,
+                   'g': 600,
+                   'h': 700,
+                   '1': 700,
+                   '2': 600,
+                   '3': 500,
+                   '4': 400,
+                   '5': 300,
+                   '6': 200,
+                   '7': 100,
+                   '8': 0}
+
     def __init__(self):
         self.board = dict()
         self.clickedSquare = None
@@ -40,16 +42,16 @@ class Board:
         # print(self.board)
         self.setupBoard()
 
-
     def drawBoard(self):
         """" Draws board on the screen"""
         is_black = False
         tile_x = 0
         tile_y = 0
-        
+
         for row in range(8):
             for col in range(8):
-                tile = pygame.Rect(tile_x, tile_y, 100, 100) # Draw a tile with current x and y values
+                # Draw a tile with current x and y values
+                tile = pygame.Rect(tile_x, tile_y, 100, 100)
                 if is_black:
                     pygame.draw.rect(screen, 'black', tile)
                     is_black = False
@@ -65,12 +67,10 @@ class Board:
             tile_y = 0
         pygame.display.flip()
 
-
     def drawPieces(self):
         for square, piece in self.board.items():
             if piece != None:
                 piece.draw(Board.getCoords(square))
-
 
     def clickSquare(self, mouse_position):
         if self.clickedSquare != None:
@@ -83,9 +83,9 @@ class Board:
 
             pygame.draw.rect(screen, (153, 245, 130), tile)
             if self.board[self.clickedSquare] != None:
-                self.board[self.clickedSquare].draw(Board.getCoords(self.clickedSquare))
+                self.board[self.clickedSquare].draw(
+                    Board.getCoords(self.clickedSquare))
                 self.board[self.clickedSquare].showPossibleMoves()
- 
 
     def whichSquare(self, coords):
         letter = ''
@@ -127,8 +127,8 @@ class Board:
         if letter == '' or num == 0:
             return None
 
-        assert(letter != '')
-        assert(num != 0)
+        assert (letter != '')
+        assert (num != 0)
         return f'{letter}{num}'
 
     @staticmethod
@@ -138,22 +138,21 @@ class Board:
         else:
             return (Board.coordinates[square[0]], Board.coordinates[square[1]])
 
-
     def setupBoard(self):
         for i in range(8):
-            self.board[f'{Board.letters[i]}7'] = Pawn('black', f'{Board.letters[i]}7', 'COORDINATES',image='blackpawn.png')
-            self.board[f'{Board.letters[i]}2'] = Pawn('white', f'{Board.letters[i]}2', 'COORDINATES',image='whitepawn.png')
+            self.board[f'{Board.letters[i]}7'] = Pawn(
+                'black', f'{Board.letters[i]}7', 'COORDINATES', image='blackpawn.png')
+            self.board[f'{Board.letters[i]}2'] = Pawn(
+                'white', f'{Board.letters[i]}2', 'COORDINATES', image='whitepawn.png')
 
-# - 
-#
 
 # chess pieces each piece has their own class
 # - create a class for each piece
-# - if we click the chess piece once it will allow movement 
+# - if we click the chess piece once it will allow movement
 #
 class Pawn:
-    #each piece needs a position and image to follow along with it and needs to be able to move 
-    
+    # each piece needs a position and image to follow along with it and needs to be able to move
+
     def __init__(self, color, square, currentposition, image='whitepawn.png'):
         self.color = color
         self.square = square
@@ -168,28 +167,27 @@ class Pawn:
     def showPossibleMoves(self):
         if self.firstMove:
             if self.color == 'white':
-                pygame.draw.circle(screen, (153, 245, 130), Board.getCoords(f'{self.square[0]}{int(self.square[1]) + 1}', centered=True), 10)
-                pygame.draw.circle(screen, (153, 245, 130), Board.getCoords(f'{self.square[0]}{int(self.square[1]) + 2}', centered=True), 10)
+                pygame.draw.circle(screen, (153, 245, 130), Board.getCoords(
+                    f'{self.square[0]}{int(self.square[1]) + 1}', centered=True), 10)
+                pygame.draw.circle(screen, (153, 245, 130), Board.getCoords(
+                    f'{self.square[0]}{int(self.square[1]) + 2}', centered=True), 10)
             else:
-                pygame.draw.circle(screen, (153, 245, 130), Board.getCoords(f'{self.square[0]}{int(self.square[1]) - 1}', centered=True), 10)
-                pygame.draw.circle(screen, (153, 245, 130), Board.getCoords(f'{self.square[0]}{int(self.square[1]) - 2}', centered=True), 10)
+                pygame.draw.circle(screen, (153, 245, 130), Board.getCoords(
+                    f'{self.square[0]}{int(self.square[1]) - 1}', centered=True), 10)
+                pygame.draw.circle(screen, (153, 245, 130), Board.getCoords(
+                    f'{self.square[0]}{int(self.square[1]) - 2}', centered=True), 10)
         else:
             if self.color == 'white':
-                pygame.draw.circle(screen, (153, 245, 130), Board.getCoords(f'{self.square[0]}{int(self.square[1]) + 1}', centered=True), 10)
+                pygame.draw.circle(screen, (153, 245, 130), Board.getCoords(
+                    f'{self.square[0]}{int(self.square[1]) + 1}', centered=True), 10)
             else:
-                pygame.draw.circle(screen, (153, 245, 130), Board.getCoords(f'{self.square[0]}{int(self.square[1]) - 1}', centered=True), 10)
-
-            
+                pygame.draw.circle(screen, (153, 245, 130), Board.getCoords(
+                    f'{self.square[0]}{int(self.square[1]) - 1}', centered=True), 10)
 
 
 gameBoard = Board()
 gameBoard.drawBoard()
 gameBoard.drawPieces()
-# p = Pawn("black",'blackpawnbykev.png')
-# p.draw((25,125))
-
-# p2 = Pawn("white", 'whitepawnbykev.png')
-# p2.draw((25,625))
 
 
 while run:
@@ -204,8 +202,6 @@ while run:
             mouse_position = pygame.mouse.get_pos()
             # pygame.draw.circle(screen, 'red', mouse_position, 10)
             gameBoard.clickSquare(mouse_position)
-
-
 
     pygame.display.flip()
 pygame.quit()
