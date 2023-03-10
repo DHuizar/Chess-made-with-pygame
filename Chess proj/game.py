@@ -12,7 +12,6 @@ run = True
 # - 64 clickable tiles
 # - have chess board be like an array
 # - if user clicks a tile with a piece in it, user can move piece
-#hello my fellow beans 😳
 
 class Board:
     letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
