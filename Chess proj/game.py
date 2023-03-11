@@ -11,6 +11,7 @@ run = True
 pygame.mixer.init()
 chess_hit = pygame.mixer.Sound('chess-hit.wav')
 
+
 class Board:
     """
     Class representing the game board.
@@ -193,17 +194,52 @@ class Board:
             return (Board.coordinates[square[0]], Board.coordinates[square[1]])
 
     @staticmethod
-    def getTranslation(square, x, y) -> str:
-        """ Return a coordinate pair of the given square + x + y. """
-        return f'{Board.letters[Board.letters.index(square[0]) + x]}{int(square[1]) + y}'
+    def getTranslation(square, direction, magnitude) -> str:
+        """ Return a coordinate pair of a square given the direction, magnitude, and starting square.  Returns None if square would be invalid. """
+
+        if direction == 'up':
+            return f'{Board.letters[Board.letters.index(square[0])]}{int(square[1]) + magnitude}'
+        if direction == 'down':
+            return f'{Board.letters[Board.letters.index(square[0])]}{int(square[1]) - magnitude}'
+        if direction == 'left':
+            return f'{Board.letters[Board.letters.index(square[0]) - magnitude]}{int(square[1])}'
+        if direction == 'right':
+            return f'{Board.letters[Board.letters.index(square[0]) + magnitude]}{int(square[1])}'
+        if direction == 'upleft':
+            return f'{Board.letters[Board.letters.index(square[0]) - magnitude]}{int(square[1]) + magnitude}'
+        if direction == 'upright':
+            return f'{Board.letters[Board.letters.index(square[0]) + magnitude]}{int(square[1]) + magnitude}'
+        if direction == 'downleft':
+            return f'{Board.letters[Board.letters.index(square[0]) - magnitude]}{int(square[1]) - magnitude}'
+        if direction == 'downright':
+            return f'{Board.letters[Board.letters.index(square[0]) + magnitude]}{int(square[1]) - magnitude}'
+
+    @staticmethod
+    def getPossibleEdges(square):
+        """ Return a tuple of all the edges the square is touching. """
+
+        edges = list()
+
+        if square[0] == 'a':
+            edges.append('left')
+        if square[0] == 'h':
+            edges.append('right')
+        if square[1] == '1':
+            edges.append('bottom')
+        if square[1] == '8':
+            edges.append('top')
+
+        return tuple(edges)
 
     @staticmethod
     def setupBoard():
-        for i in range(8):
-            Board.board[f'{Board.letters[i]}4'] = Pawn(
-                'black', f'{Board.letters[i]}4',  image='blackpawn.png')
-            Board.board[f'{Board.letters[i]}2'] = Pawn(
-                'white', f'{Board.letters[i]}2',  image='whitepawn.png')
+        Board.board['e5'] = Piece('white', 'e5')
+        Board.board['d4'] = Rook('white', 'd4')
+        # for i in range(8):
+        #     Board.board[f'{Board.letters[i]}4'] = Pawn(
+        #         'black', f'{Board.letters[i]}4',  image='blackpawn.png')
+        #     Board.board[f'{Board.letters[i]}2'] = Pawn(
+        #         'white', f'{Board.letters[i]}2',  image='whitepawn.png')
 
 
 # chess pieces each piece has their own class
@@ -221,68 +257,67 @@ class Piece(pygame.sprite.Sprite):
         self.color = color
         self.square = square
         self.image = pygame.image.load(image)
+        self.image = pygame.transform.scale(self.image, (80, 80))
+        self.allowedDirections = (
+            'up', 'down', 'left', 'right', 'upleft', 'upright', 'downleft', 'downright')
 
-    # def getPossibleMoves(self):
-    #     """ Return a tuple of all possible moves. """
+    def getPossibleMoves(self):
+        """ Return a tuple of all possible moves. """
 
-    #     moves = list()
-    #     edges = self.getPossibleEdges()
-    #     directions = {'up': 1,
-    #                   'down': 1,
-    #                   'left': 1,
-    #                   'right': 1,
-    #                   'upper left': 1,
-    #                   'upper right': 1,
-    #                   'bottom left': 1,
-    #                   'bottom right': 1}
+        moves = list()
+        directions = dict()
+        for allowedDirection in self.allowedDirections:
+            directions[allowedDirection] = 1
 
-    #     # up or down depending on color
-    #     if self.color == 'white':
-    #         i = 1
-    #     else:
-    #         i = -1
+        edges = Board.getPossibleEdges(self.square)
 
-    #     if 'up' in edges:
-    #         del directions['up']
-    #         del directions['upper left']
-    #         del directions['upper right']
-    #     if 'down' in edges:
-    #         del directions['down']
-    #         del directions['bottom left']
-    #         del directions['bottom right']
-    #     if 'left' in edges:
-    #         del directions['left']
-    #         del directions['upper left']
-    #         del directions['buttom left']
-    #     if 'right' in edges:
-    #         del directions['right']
-    #         del directions['upper right']
-    #         del directions['buttom right']
+        illegalDirections = set()
 
-    #     while len(directions) != 0:
-    #         for d in directions:
+        if 'top' in edges:
+            illegalDirections.add('up')
+            illegalDirections.add('upleft')
+            illegalDirections.add('upright')
+        if 'bottom' in edges:
+            illegalDirections.add('down')
+            illegalDirections.add('downleft')
+            illegalDirections.add('downright')
+        if 'left' in edges:
+            illegalDirections.add('left')
+            illegalDirections.add('upleft')
+            illegalDirections.add('downleft')
+        if 'right' in edges:
+            illegalDirections.add('right')
+            illegalDirections.add('upright')
+            illegalDirections.add('downright')
 
-    #     return tuple(moves)
+        for d in illegalDirections:
+            if d in directions.keys():
+                del directions[d]
+
+        while len(directions) != 0:
+            for direction, magnitude in directions.copy().items():
+                move_d = Board.getTranslation(
+                    self.square, direction, magnitude)
+
+                # move is valid if square is empty or if square is occupied by opposing piece
+                if (Board.board[move_d] == None) or (Board.board[move_d] != None and Board.board[move_d].color != self.color):
+                    moves.append(move_d)
+
+                directions[direction] += 1
+                edges_d = Board.getPossibleEdges(move_d)
+                stop_condition = (direction in ['left', 'upleft', 'downleft'] and 'left' in edges_d) or (
+                    direction in ['right', 'upright', 'downright'] and 'right' in edges_d) or (
+                    direction in ['up', 'upleft', 'upright'] and 'top' in edges_d) or (
+                    direction in ['down', 'downleft', 'downright'] and 'bottom' in edges_d) or (Board.board[move_d] != None)
+                # if sightline is obstructed by a piece or an edge has been reached
+                if stop_condition:
+                    del directions[direction]
+
+        return tuple(moves)
 
     def draw(self, coords):
         # pImage = pygame.transform.scale(self.image, (80,80))
         screen.blit(self.image, coords)
-
-    def getPossibleEdges(self):
-        """ Return a tuple of all the edges the piece is touching. """
-
-        edges = list()
-
-        if self.square[0] == 'a':
-            edges.append('left')
-        if self.square[0] == 'h':
-            edges.append('right')
-        if self.square[1] == '1':
-            edges.append('bottom')
-        if self.square[1] == '8':
-            edges.append('top')
-
-        return tuple(edges)
 
     def drawPossibleMoves(self):
         """ Draw circles for possible moves. """
@@ -297,7 +332,7 @@ class Piece(pygame.sprite.Sprite):
 
 
 class Pawn(Piece):
-    # each piece needs a position and image to follow along with it and needs to be able to move
+    """ The pawn. Has a first move mechanic as well as en passant. """
 
     def __init__(self, color, square,  image='whitepawn.png'):
         """ Init pawn instance. """
@@ -308,7 +343,7 @@ class Pawn(Piece):
         """ Return a tuple of all possible moves. """
 
         moves = list()
-        edges = self.getPossibleEdges()
+        edges = Board.getPossibleEdges(self.square)
 
         # check if pawn is at top/bottom
         if (self.color == 'white' and 'top' in edges) or (self.color == 'black' and 'bottom' in edges):
@@ -316,31 +351,43 @@ class Pawn(Piece):
 
         # up or down depending on color
         if self.color == 'white':
-            i = 1
+            direction = 'up'
         else:
-            i = -1
+            direction = 'down'
 
-        edges = self.getPossibleEdges()
+        edges = Board.getPossibleEdges(self.square)
 
-        if Board.board[Board.getTranslation(self.square, 0, i)] == None:
-            moves.append(Board.getTranslation(self.square, 0, i))
+        if Board.board[Board.getTranslation(self.square, direction, 1)] == None:
+            moves.append(Board.getTranslation(self.square, direction, 1))
             # first move of a pawn can be 2 spaces forward
-            if self.firstMove and Board.board[Board.getTranslation(self.square, 0, 2*i)] == None:
-                moves.append(Board.getTranslation(self.square, 0, 2*i))
+            if self.firstMove and Board.board[Board.getTranslation(self.square, direction, 2)] == None:
+                moves.append(Board.getTranslation(self.square, direction, 2))
 
         # left edge case
         if 'left' not in edges:
-            upper_left = Board.getTranslation(self.square, -1, i)
+            upper_left = Board.getTranslation(
+                self.square, direction + 'left', 1)
             if Board.board[upper_left] != None and Board.board[upper_left].color != self.color:
                 moves.append(upper_left)
 
         # right edge case
         if 'right' not in edges:
-            upper_right = Board.getTranslation(self.square, 1, i)
+            upper_right = Board.getTranslation(
+                self.square, direction + 'right', 1)
             if Board.board[upper_right] != None and Board.board[upper_right].color != self.color:
                 moves.append(upper_right)
 
         return tuple(moves)
+
+
+class Rook(Piece):
+    """ The rook. """
+
+    def __init__(self, color, square,  image='whiterook.png'):
+        Piece.__init__(self, color, square, image)
+        self.image = pygame.transform.scale(self.image, (90, 90))
+        self.allowedDirections = (
+            'up', 'down', 'left', 'right')
 
 
 b = Board()
