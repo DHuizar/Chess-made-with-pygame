@@ -11,7 +11,6 @@ run = True
 pygame.mixer.init()
 chess_hit = pygame.mixer.Sound('chess-hit.wav')
 
-
 class Board:
     """
     Class representing the game board.
