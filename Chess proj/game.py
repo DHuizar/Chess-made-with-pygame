@@ -1,6 +1,6 @@
 import pygame
 
-WIDTH = 800
+WIDTH = 1000
 HEIGHT = 800
 fps = 60
 timer = pygame.time.Clock()
@@ -63,6 +63,8 @@ class Board:
         tile_x = 0
         tile_y = 0
 
+        screen.fill('gray')
+
         for row in range(8):
             for col in range(8):
                 # Draw a tile with current x and y values
@@ -88,6 +90,12 @@ class Board:
         for square, piece in Board.board.items():
             if piece != None:
                 piece.draw(Board.getCoords(square))
+        for count, piece in enumerate(Board.whitePiecesTaken):
+            piece.image = pygame.transform.scale(piece.image, (40, 40))
+            piece.draw((850 + (15 * count), 50))
+        for count, piece in enumerate(Board.blackPiecesTaken):
+            piece.image = pygame.transform.scale(piece.image, (40, 40))
+            piece.draw((850 + (15 * count), 450))
 
     @staticmethod
     def clickSquare(mouse_position):
@@ -234,12 +242,12 @@ class Board:
     @staticmethod
     def setupBoard():
         Board.board['e5'] = Piece('white', 'e5')
-        Board.board['d4'] = Rook('white', 'd4')
-        # for i in range(8):
-        #     Board.board[f'{Board.letters[i]}4'] = Pawn(
-        #         'black', f'{Board.letters[i]}4',  image='blackpawn.png')
-        #     Board.board[f'{Board.letters[i]}2'] = Pawn(
-        #         'white', f'{Board.letters[i]}2',  image='whitepawn.png')
+        Board.board['d6'] = Rook('white', 'd6')
+        for i in range(8):
+            Board.board[f'{Board.letters[i]}4'] = Pawn(
+                'black', f'{Board.letters[i]}4',  image='blackpawn.png')
+            Board.board[f'{Board.letters[i]}2'] = Pawn(
+                'white', f'{Board.letters[i]}2',  image='whitepawn.png')
 
 
 # chess pieces each piece has their own class
@@ -252,6 +260,8 @@ class Board:
 #         rectangle.__init__(self)
 
 class Piece(pygame.sprite.Sprite):
+    """ Base class for the chess pieces. """
+
     def __init__(self, color, square, image='easteregg.png'):
         pygame.sprite.Sprite.__init__(self)
         self.color = color
